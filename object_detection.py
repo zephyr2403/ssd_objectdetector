@@ -80,4 +80,27 @@ def detect_(frame,net,transform):
 
 net = build_ssd('test') # takes two phase train and test
 net.load_state_dict(torch.load('/home/dragonbreath/Zenith/Python/Projects/Object Detection/ssd300_mAP_77.43_v2.pth',map_location = lambda storage, loc: storage ))
+if dev:
+	net.cuda() 
+#CREATING THE TRANSFORMATION
 
+transform = BaseTransform(net.size,
+    (
+        104/256.0,
+        117/256.0,
+        123/256.0
+    ))
+
+#OBJECT DETECTION ON VIDEO
+imageio.plugins.ffmpeg.download()
+reader = imageio.get_reader('/home/dragonbreath/a.mp4')
+fps = reader.get_meta_data()['fps']
+writer = imageio.get_writer('/home/dragonbreath/output21.mp4',fps=fps) # no of fps u want
+print(len(reader))
+for i ,frame in enumerate(reader): 
+    #iterate through frame of reader
+    frame = detect_(frame,net.eval(),transform)
+    writer.append_data(frame)
+    print(i)
+
+writer.close()
